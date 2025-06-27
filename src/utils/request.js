@@ -12,6 +12,8 @@ const requests = axios.create({
 //拦截器
 requests.interceptors.request.use((config) => {
   config = config || {};
+  const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+  config.headers.Authorization = `Bearer ${userInfo?.token || ''}`;
   //pinia
   // try {
   //   const user = JSON.parse(localStorage.getItem(USER_KEY) || '');
