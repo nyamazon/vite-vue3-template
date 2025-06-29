@@ -143,7 +143,7 @@
 </template>
 
 <script setup>
-  import { ref, computed } from 'vue';
+  import { ref, computed,onMounted } from 'vue';
   import {
     Plus,
     Search,
@@ -159,6 +159,7 @@
   import { useRouter } from 'vue-router';
   import TaskDetail from './TaskDetail.vue';
   import AddTasks from './AddTasks.vue';
+  import { taskApi } from '@/api/tasks'
 
   const router = useRouter();
 
@@ -173,149 +174,150 @@
   const currentUser = '张三';
 
   // 统一的任务数据结构
-  const allTasks = ref([
-    {
-      id: 1,
-      name: '用户登录JWT鉴权方案设计',
-      description:
-        '设计用户登录的JWT鉴权方案，包含token生成、校验、过期机制。需要考虑安全性、性能和用户体验，确保系统的安全性和稳定性。',
-      status: '进行中',
-      difficulty: '高',
-      assignee: '张三',
-      collaborators: ['李四', '王五'],
-      startDate: '2024-01-15',
-      dueDate: '2024-01-25',
-      progress: 60,
-      projectName: '用户登录模块技术方案设计',
-      projectParentId: 1,
-      projectParentName: '训练平台-荐股',
-      projectTypeName: '部门自发',
-      projectTypeId: 2,
-      isFollowed: false,
-      blockedTasks: [
-        {
-          id: 4,
-          name: '前端登录页面开发',
-        },
-      ],
-      subtasks: [
-        {
-          id: 1,
-          title: 'JWT库选型和集成',
-          description: '调研并选择合适的JWT库，完成项目集成',
-          assignee: '张三',
-          dueDate: '2024-01-18',
-          completed: true,
-        },
-        {
-          id: 2,
-          title: 'token生成逻辑实现',
-          description: '实现用户登录后的token生成逻辑',
-          assignee: '李四',
-          dueDate: '2024-01-20',
-          completed: false,
-        },
-      ],
-      comments: [
-        {
-          id: 1,
-          user: '李四',
-          content: '建议在token中加入用户角色信息，方便权限控制',
-          timestamp: '2024-01-19 09:30',
-        },
-      ],
-      attachments: [
-        {
-          id: 1,
-          name: 'JWT技术方案.pdf',
-          type: 'document',
-          size: '2.3MB',
-          uploadDate: '2024-01-16',
-        },
-      ],
-      progressHistory: [
-        {
-          id: 1,
-          timestamp: '2024-01-20 14:30',
-          user: '张三',
-          action: '更新进度',
-          description: '完成JWT基础架构设计，开始实现token生成逻辑',
-          progress: 60,
-          type: 'progress',
-        },
-      ],
-    },
-    {
-      id: 5,
-      name: '前端登录页面开发',
-      description:
-        '开发用户登录页面，包含表单验证、错误提示、记住密码等功能。需要适配移动端和桌面端。',
-      status: '已完成',
-      difficulty: '中',
-      projectTypeName: '总经办下发',
-      projectTypeId: 1,
-      assignee: '钱七',
-      collaborators: ['孙八'],
-      startDate: '2024-01-18',
-      dueDate: '2024-01-28',
-      estimatedHours: 40,
-      actualHours: 38,
-      progress: 100,
-      projectName: '用户登录模块技术方案设计',
-      projectParentId: 1,
-      projectParentName: '日常',
-      isFollowed: true,
-      dependencies: [],
-      blockedTasks: [],
-      tags: ['前端', '页面开发', 'UI'],
-      subtasks: [
-        {
-          id: 4,
-          title: '登录表单组件开发',
-          description: '开发可复用的登录表单组件',
-          assignee: '钱七',
-          dueDate: '2024-01-22',
-          completed: true,
-        },
-        {
-          id: 5,
-          title: '表单验证逻辑实现',
-          description: '实现前端表单验证逻辑',
-          assignee: '孙八',
-          dueDate: '2024-01-25',
-          completed: true,
-        },
-      ],
-      comments: [
-        {
-          id: 2,
-          user: '孙八',
-          content: '登录页面已完成开发，测试通过',
-          timestamp: '2024-01-28 16:30',
-        },
-      ],
-      attachments: [
-        {
-          id: 2,
-          name: '登录页面设计稿.png',
-          type: 'image',
-          size: '1.2MB',
-          uploadDate: '2024-01-18',
-        },
-      ],
-      progressHistory: [
-        {
-          id: 2,
-          timestamp: '2024-01-28 16:30',
-          user: '钱七',
-          action: '任务完成',
-          description: '前端登录页面开发完成，所有功能测试通过',
-          progress: 100,
-          type: 'complete',
-        },
-      ],
-    },
-  ]);
+  // const allTasks = ref([
+  //   {
+  //     id: 1,
+  //     name: '用户登录JWT鉴权方案设计',
+  //     description:
+  //       '设计用户登录的JWT鉴权方案，包含token生成、校验、过期机制。需要考虑安全性、性能和用户体验，确保系统的安全性和稳定性。',
+  //     status: '进行中',
+  //     difficulty: '高',
+  //     assignee: '张三',
+  //     collaborators: ['李四', '王五'],
+  //     startDate: '2024-01-15',
+  //     dueDate: '2024-01-25',
+  //     progress: 60,
+  //     projectName: '用户登录模块技术方案设计',
+  //     projectParentId: 1,
+  //     projectParentName: '训练平台-荐股',
+  //     projectTypeName: '部门自发',
+  //     projectTypeId: 2,
+  //     isFollowed: false,
+  //     blockedTasks: [
+  //       {
+  //         id: 4,
+  //         name: '前端登录页面开发',
+  //       },
+  //     ],
+  //     subtasks: [
+  //       {
+  //         id: 1,
+  //         title: 'JWT库选型和集成',
+  //         description: '调研并选择合适的JWT库，完成项目集成',
+  //         assignee: '张三',
+  //         dueDate: '2024-01-18',
+  //         completed: true,
+  //       },
+  //       {
+  //         id: 2,
+  //         title: 'token生成逻辑实现',
+  //         description: '实现用户登录后的token生成逻辑',
+  //         assignee: '李四',
+  //         dueDate: '2024-01-20',
+  //         completed: false,
+  //       },
+  //     ],
+  //     comments: [
+  //       {
+  //         id: 1,
+  //         user: '李四',
+  //         content: '建议在token中加入用户角色信息，方便权限控制',
+  //         timestamp: '2024-01-19 09:30',
+  //       },
+  //     ],
+  //     attachments: [
+  //       {
+  //         id: 1,
+  //         name: 'JWT技术方案.pdf',
+  //         type: 'document',
+  //         size: '2.3MB',
+  //         uploadDate: '2024-01-16',
+  //       },
+  //     ],
+  //     progressHistory: [
+  //       {
+  //         id: 1,
+  //         timestamp: '2024-01-20 14:30',
+  //         user: '张三',
+  //         action: '更新进度',
+  //         description: '完成JWT基础架构设计，开始实现token生成逻辑',
+  //         progress: 60,
+  //         type: 'progress',
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     id: 5,
+  //     name: '前端登录页面开发',
+  //     description:
+  //       '开发用户登录页面，包含表单验证、错误提示、记住密码等功能。需要适配移动端和桌面端。',
+  //     status: '已完成',
+  //     difficulty: '中',
+  //     projectTypeName: '总经办下发',
+  //     projectTypeId: 1,
+  //     assignee: '钱七',
+  //     collaborators: ['孙八'],
+  //     startDate: '2024-01-18',
+  //     dueDate: '2024-01-28',
+  //     estimatedHours: 40,
+  //     actualHours: 38,
+  //     progress: 100,
+  //     projectName: '用户登录模块技术方案设计',
+  //     projectParentId: 1,
+  //     projectParentName: '日常',
+  //     isFollowed: true,
+  //     dependencies: [],
+  //     blockedTasks: [],
+  //     tags: ['前端', '页面开发', 'UI'],
+  //     subtasks: [
+  //       {
+  //         id: 4,
+  //         title: '登录表单组件开发',
+  //         description: '开发可复用的登录表单组件',
+  //         assignee: '钱七',
+  //         dueDate: '2024-01-22',
+  //         completed: true,
+  //       },
+  //       {
+  //         id: 5,
+  //         title: '表单验证逻辑实现',
+  //         description: '实现前端表单验证逻辑',
+  //         assignee: '孙八',
+  //         dueDate: '2024-01-25',
+  //         completed: true,
+  //       },
+  //     ],
+  //     comments: [
+  //       {
+  //         id: 2,
+  //         user: '孙八',
+  //         content: '登录页面已完成开发，测试通过',
+  //         timestamp: '2024-01-28 16:30',
+  //       },
+  //     ],
+  //     attachments: [
+  //       {
+  //         id: 2,
+  //         name: '登录页面设计稿.png',
+  //         type: 'image',
+  //         size: '1.2MB',
+  //         uploadDate: '2024-01-18',
+  //       },
+  //     ],
+  //     progressHistory: [
+  //       {
+  //         id: 2,
+  //         timestamp: '2024-01-28 16:30',
+  //         user: '钱七',
+  //         action: '任务完成',
+  //         description: '前端登录页面开发完成，所有功能测试通过',
+  //         progress: 100,
+  //         type: 'complete',
+  //       },
+  //     ],
+  //   },
+  // ]);
+  const allTasks = ref([]);
 
   const kanbanColumns = computed(() => {
     if (activeTab.value === 'person') {
@@ -335,6 +337,27 @@
       ];
     }
   });
+
+  const loadTasks = async () => {
+  try {
+    // loading.value = true
+    const result = await taskApi.getAllTasks()
+    console.log(result)
+    if (result.code === 200) {
+      allTasks.value = result.data
+    } else {
+      ElMessage.error(result.message)
+    }
+  } catch (error) {
+    ElMessage.error('加载任务列表失败')
+  } finally {
+    // loading.value = false
+  }
+}
+
+onMounted(() => {
+  loadTasks()
+})
 
   const getFilteredTasks = (viewType) => {
     let tasks = allTasks.value;

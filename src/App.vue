@@ -54,7 +54,7 @@
   }
 
   .main-content {
-    padding: 0;
+    padding: 0 !important;
     background-color: #f5f7fa;
   }
 </style>
