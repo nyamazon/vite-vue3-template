@@ -119,7 +119,7 @@
     <!-- 底部信息 -->
     <div class="login-footer">
       <div class="footer-content">
-        <div class="copyright">© 2024 技术策划部项目管理系统. All rights reserved.</div>
+        <div class="copyright">© 2025 技术策划部项目管理系统. All rights reserved.</div>
         <div class="footer-links">
           <el-link type="info" :underline="false">使用帮助</el-link>
           <el-divider direction="vertical" />
@@ -173,7 +173,7 @@
       const res = await loginReq(loginForm);
       console.log(res);
       if (res.code === 200) {
-        ElMessage.success('登录成功！');
+        ElMessage.success('登录成功！正在跳转中...');
 
         // 存储用户信息
         const userInfo = res.result || {
@@ -186,7 +186,7 @@
 
         // 跳转到主页
         setTimeout(() => {
-          router.push('/');
+          router.push('/projects');
         }, 500);
       } else {
         ElMessage.error('用户名或密码错误');
@@ -370,7 +370,6 @@
           .feature-text {
             h3 {
               font-size: 16px;
-              font-weight: 600;
               margin-bottom: 4px;
             }
 

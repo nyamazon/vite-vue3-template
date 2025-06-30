@@ -12,7 +12,7 @@
       </el-tabs>
 
       <!-- 搜索和筛选 -->
-      <div class="filters">
+      <!-- <div class="filters">
         <el-input
           v-model="searchTerm"
           placeholder="搜索项目名称或负责人..."
@@ -39,7 +39,7 @@
             <el-option label="延期" value="延期" />
           </el-select>
         </div>
-      </div>
+      </div> -->
       <!-- 项目列表 -->
       <div class="projects-main">
         <!-- <div class="project-headline">
@@ -65,7 +65,7 @@
                   </div>
                 </div>
 
-                <el-dropdown @command="handleCommand" trigger="click">
+                <!-- <el-dropdown @command="handleCommand" trigger="click">
                   <el-button :icon="MoreFilled" circle size="small" />
                   <template #dropdown>
                     <el-dropdown-menu>
@@ -80,7 +80,7 @@
                       </el-dropdown-item>
                     </el-dropdown-menu>
                   </template>
-                </el-dropdown>
+                </el-dropdown> -->
               </div>
 
               <p class="project-description">{{ project.description }}</p>

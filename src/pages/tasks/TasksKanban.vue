@@ -70,13 +70,10 @@
                 >
                   <div class="task-header">
                     <h4>{{ task.name }}</h4>
-                    <el-dropdown @command="handleTaskCommand" trigger="click">
+                    <el-dropdown @command="handleTaskCommand" trigger="hover">
                       <el-button :icon="MoreFilled" circle size="small" />
                       <template #dropdown>
                         <el-dropdown-menu>
-                          <el-dropdown-item :command="`edit-${task.id}`" :icon="Edit">
-                            编辑任务
-                          </el-dropdown-item>
                           <el-dropdown-item :command="`view-${task.id}`" :icon="View">
                             查看详情
                           </el-dropdown-item>
@@ -102,7 +99,7 @@
                     <div class="meta-item">
                       开始时间：
                       <el-icon><Calendar /></el-icon>
-                      <span>{{ task.dueDate }}</span>
+                      <span>{{ task.startDate }}</span>
                     </div>
                     <div class="meta-item">
                       结束时间：
@@ -143,7 +140,7 @@
 </template>
 
 <script setup>
-  import { ref, computed,onMounted } from 'vue';
+  import { ref, computed, onMounted } from 'vue';
   import {
     Plus,
     Search,
@@ -155,11 +152,11 @@
     Calendar,
     Link,
   } from '@element-plus/icons-vue';
-  import { ElMessage } from 'element-plus';
+  import { ElMessage, ElMessageBox } from 'element-plus';
   import { useRouter } from 'vue-router';
   import TaskDetail from './TaskDetail.vue';
   import AddTasks from './AddTasks.vue';
-  import { taskApi } from '@/api/tasks'
+  import { taskApi } from '@/api/tasks';
 
   const router = useRouter();
 
@@ -171,7 +168,7 @@
   const filterStatus = ref('all');
   const filterResponsible = ref('all');
 
-  const currentUser = '张三';
+  const currentUser = JSON.parse(localStorage.getItem('userInfo'))?.nickName;
 
   // 统一的任务数据结构
   // const allTasks = ref([
@@ -339,25 +336,25 @@
   });
 
   const loadTasks = async () => {
-  try {
-    // loading.value = true
-    const result = await taskApi.getAllTasks()
-    console.log(result)
-    if (result.code === 200) {
-      allTasks.value = result.data
-    } else {
-      ElMessage.error(result.message)
+    try {
+      // loading.value = true
+      const result = await taskApi.getAllTasks();
+      console.log(result);
+      if (result.code === 200) {
+        allTasks.value = result.data;
+      } else {
+        ElMessage.error(result.message);
+      }
+    } catch (error) {
+      ElMessage.error('加载任务列表失败');
+    } finally {
+      // loading.value = false
     }
-  } catch (error) {
-    ElMessage.error('加载任务列表失败')
-  } finally {
-    // loading.value = false
-  }
-}
+  };
 
-onMounted(() => {
-  loadTasks()
-})
+  onMounted(() => {
+    loadTasks();
+  });
 
   const getFilteredTasks = (viewType) => {
     let tasks = allTasks.value;
@@ -404,10 +401,10 @@ onMounted(() => {
 
   const getStatusType = (status) => {
     const types = {
-      未开始: 'success',
-      进行中: 'warning',
+      未开始: 'info',
+      进行中: 'success',
       即将完成: 'danger',
-      已完成: 'danger',
+      已完成: 'warning',
     };
     return types[status] || 'info';
   };
@@ -418,19 +415,30 @@ onMounted(() => {
     }
   };
 
-  const updateProgress = (id, progressForm) => {
+  const updateProgress = async (id, progressForm) => {
     const task = allTasks.value.find((t) => t.id === id);
     if (task) {
-      task.progress = progressForm.progress;
-      task.progressHistory.push({
-        id: task.progressHistory.length + 1,
-        timestamp: new Date().toLocaleString(),
-        user: currentUser,
-        action: '更新进度',
-        progress: progressForm.progress,
-        description: progressForm.description,
-      });
-      ElMessage.success('任务进度更新成功');
+      const result = await taskApi.updateTaskProgress(
+        id,
+        progressForm.progress,
+        progressForm.description,
+        currentUser
+      );
+      if (result.code === 200) {
+        ElMessage.success('任务进度更新成功');
+        task.progress = progressForm.progress;
+        task.progressHistory.push({
+          id: task.progressHistory.length + 1,
+          timestamp: new Date().toLocaleString(),
+          user: currentUser,
+          action: '更新进度',
+          progress: progressForm.progress,
+          description: progressForm.description,
+        });
+      } else {
+        ElMessage.error('任务进度更新失败');
+      }
+      loadTasks();
     }
   };
 
@@ -479,28 +487,38 @@ onMounted(() => {
       const task = allTasks.value.find((t) => t.id === taskId);
       if (task) {
         task.status = newStatus;
+        taskApi.updateTaskStatus(taskId, newStatus, currentUser);
         ElMessage.success(`任务已移动到"${newStatus}"`);
       }
     }
   };
 
-  const createTask = () => {
-    ElMessage.success('创建任务功能开发中...');
-  };
-
-  const handleTaskCommand = (command) => {
+  const handleTaskCommand = async (command) => {
     const [action, id] = command.split('-');
     const taskId = parseInt(id);
 
     switch (action) {
-      case 'edit':
-        ElMessage.info(`编辑任务 ${taskId}`);
-        break;
       case 'view':
-        ElMessage.info(`查看任务 ${taskId}`);
+        goToTaskDetail(taskId);
         break;
       case 'delete':
-        ElMessage.warning(`删除任务 ${taskId}`);
+        ElMessageBox.confirm('确定要删除该任务吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+        })
+          .then(async () => {
+            const result = await taskApi.deleteTask(taskId);
+            if (result.code === 200) {
+              ElMessage.success('任务删除成功');
+              loadTasks();
+            } else {
+              ElMessage.error('任务删除失败');
+            }
+          })
+          .catch(() => {
+            ElMessage.info('已取消删除');
+          });
         break;
     }
   };
@@ -530,9 +548,17 @@ onMounted(() => {
     taskItem.value = {};
   };
 
-  const addTaskFinish = (task) => {
+  const addTaskFinish = async (task) => {
     addDialog.value = false;
-    allTasks.value.push(task);
+    const result = await taskApi.createTask(task);
+    if (result.code === 200) {
+      ElMessage.success('任务创建成功');
+      loadTasks();
+    } else {
+      ElMessage.error('任务创建失败');
+    }
+    // allTasks.value.push(task);
+    taskApi;
   };
 </script>
 

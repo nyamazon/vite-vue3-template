@@ -34,12 +34,6 @@
     font-family: 'AlibabaPuHui3';
     src: url('@/assets/fonts/AlibabaPuHuiTiMedium.ttf');
   }
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
   body {
     font-family: 'AlibabaPuHui3';
     background-color: #f5f7fa;

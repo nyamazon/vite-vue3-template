@@ -2,12 +2,13 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Login from '@/pages/Login.vue';
 import Dashboard from '@/pages/Dashboard.vue';
 import Projects from '@/pages/Projects.vue';
-import Tasks from '@/pages/Tasks.vue';
-import TaskDetail from '@/pages/TaskDetail.vue';
+import TasksKanban from '@/pages/tasks/TasksKanban.vue';
+import TasksTable from '@/pages/tasks/TasksTable.vue';
+import TaskDetail from '@/pages/tasks/TaskDetail.vue';
 const routes = [
   {
     path: '/',
-    redirect: '/dashboard',
+    redirect: '/login',
   },
   {
     path: '/login',
@@ -30,8 +31,21 @@ const routes = [
   {
     path: '/tasks',
     name: 'Tasks',
-    component: Tasks,
     meta: { requiresAuth: true },
+    children: [
+      {
+        path: 'kanban',
+        name: 'TasksKanban',
+        component: TasksKanban,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'table',
+        name: 'TasksTable',
+        component: TasksTable,
+        meta: { requiresAuth: true },
+      },
+    ],
   },
   {
     path: '/tasksDetail/:id',

@@ -23,7 +23,7 @@
               </div>
             </div>
           </div>
-          <div class="header-actions">
+          <div class="header-actions items-center">
             <el-button
               :type="taskDetail.isFollowed ? 'primary' : 'default'"
               :icon="taskDetail.isFollowed ? Star : StarFilled"
@@ -31,6 +31,7 @@
             >
               {{ taskDetail.isFollowed ? '已关注' : '关注' }}
             </el-button>
+            <el-button type="primary" @click="updateTask">提交更新数据</el-button>
           </div>
         </div>
       </div>
@@ -44,11 +45,27 @@
               <template #header>
                 <div class="card-header">
                   <h3>任务描述</h3>
-                  <el-button :icon="Edit" size="small">编辑</el-button>
+                  <el-button :icon="Edit" size="small" @click="startEditDescription">
+                    编辑
+                  </el-button>
                 </div>
               </template>
-              <div class="description-content">
+              <div class="description-content" v-if="!editDescriptionVisible">
                 <p>{{ taskDetail.description }}</p>
+              </div>
+              <div v-else>
+                <el-input
+                  v-model="taskDetail.description"
+                  type="textarea"
+                  :rows="3"
+                  placeholder="请输入任务描述"
+                />
+                <div class="description-actions pt-2 flex justify-end">
+                  <el-button size="small" @click="cancelEditDescription">取消</el-button>
+                  <el-button type="primary" size="small" @click="editDescriptionVisible = false">
+                    保存
+                  </el-button>
+                </div>
               </div>
             </el-card>
 
@@ -226,7 +243,10 @@
             <!-- 基本信息 -->
             <el-card class="info-card" shadow="never">
               <template #header>
-                <h3>基本信息</h3>
+                <div class="flex justify-between">
+                  <h3>基本信息</h3>
+                  <el-button :icon="Edit" type="primary" size="small">编辑</el-button>
+                </div>
               </template>
               <div class="info-content">
                 <div class="info-item">
@@ -238,28 +258,55 @@
                   >
                     <el-option label="未开始" value="未开始" />
                     <el-option label="进行中" value="进行中" />
-                    <el-option label="待审核" value="待审核" />
+                    <el-option label="即将完成" value="即将完成" />
                     <el-option label="已完成" value="已完成" />
-                    <el-option label="已取消" value="已取消" />
                   </el-select>
                 </div>
 
                 <div class="info-item">
                   <label>负责人</label>
                   <div class="assignee-info">
-                    <el-avatar :size="24">{{ taskDetail.assignee.charAt(0) }}</el-avatar>
+                    <MyAvatar :user="taskDetail.assignee" :size="24" />
                     <span>{{ taskDetail.assignee }}</span>
-                    <el-button :icon="Edit" size="small">更改</el-button>
+                    <!-- <el-button :icon="Edit" size="small">更改</el-button> -->
                   </div>
                 </div>
 
                 <div class="info-item">
                   <label>协作成员</label>
                   <div class="collaborators-info">
-                    <el-avatar v-for="member in taskDetail.collaborators" :key="member" :size="24">
-                      {{ member.charAt(0) }}
-                    </el-avatar>
-                    <el-button :icon="Plus" size="small">添加成员</el-button>
+                    <div class="flex gap-2" v-if="!addCollaboratorVisible">
+                      <MyAvatar
+                        v-for="member in taskDetail.collaborators"
+                        :key="member"
+                        :user="member"
+                        :size="24"
+                      />
+                    </div>
+                    <div v-else>
+                      <el-select
+                        v-model="taskDetail.collaborators"
+                        multiple
+                        placeholder="选择协作成员"
+                        style="width: 260px"
+                      >
+                        <el-option
+                          v-for="user in availableCollaborators"
+                          :key="user.value"
+                          :label="user.label"
+                          :value="user.value"
+                        >
+                          <div class="user-option">
+                            <el-avatar :size="24">{{ user.label.charAt(0) }}</el-avatar>
+                            <span>{{ user.label }}</span>
+                            <el-tag size="small" effect="plain">{{ user.role }}</el-tag>
+                          </div>
+                        </el-option>
+                      </el-select>
+                    </div>
+                    <el-button :icon="Plus" size="small" @click="addCollaborator">
+                      {{ addCollaboratorVisible ? '确定更改' : '添加成员' }}
+                    </el-button>
                   </div>
                 </div>
 
@@ -421,6 +468,7 @@
   import { ref, computed, onMounted } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import { ElMessage } from 'element-plus';
+  import MyAvatar from '@/components/MyAvatar.vue';
   import {
     ArrowLeft,
     Edit,
@@ -449,9 +497,48 @@
       default: () => {},
     },
   });
-  const emit = defineEmits(['update-progress', 'add-subtask', 'delete-subtask', 'add-comment']);
+  const emit = defineEmits([
+    'update-progress',
+    'add-subtask',
+    'delete-subtask',
+    'add-comment',
+    'update-task',
+  ]);
   const router = useRouter();
   const route = useRoute();
+
+  // 描述数据编辑
+  const editDescriptionVisible = ref(false);
+  let lastDescription = '';
+  const startEditDescription = () => {
+    lastDescription = taskDetail.value.description;
+    editDescriptionVisible.value = !editDescriptionVisible.value;
+  };
+  //点击取消按钮 框去掉 值还原
+  const cancelEditDescription = () => {
+    taskDetail.value.description = lastDescription;
+    editDescriptionVisible.value = false;
+  };
+
+  // 添加协作成员数据编辑
+  const addCollaboratorVisible = ref(false);
+  //成员opations
+  const availableUsers = ref([
+    { value: '张星', label: '张星', role: '后端开发工程师' },
+    { value: '唐硕', label: '唐硕', role: 'UI设计' },
+    { value: '何也', label: '何也', role: 'UI设计' },
+    { value: '章魏康', label: '章魏康', role: '技术策划部主管' },
+    { value: '黄骏雄', label: '黄骏雄', role: '前端开发工程师' },
+    { value: '钟远金', label: '钟远金', role: '编程技术员' },
+    { value: '张经凡', label: '张经凡', role: '编程技术员' },
+    { value: '郭俊', label: '郭俊', role: '编程技术员' },
+  ]);
+  const availableCollaborators = computed(() => {
+    return availableUsers.value.filter((user) => user.value !== taskDetail.value.assignee);
+  });
+  const addCollaborator = () => {
+    addCollaboratorVisible.value = !addCollaboratorVisible.value;
+  };
 
   // 对话框状态
   const showProgressDialog = ref(false);
@@ -481,26 +568,14 @@
   // 更新taskDetail的初始化，添加错误处理
   const taskDetail = ref(null);
 
-  const goBack = () => {
-    router.push('/tasks');
-  };
-
   const toggleFollow = () => {
     if (taskDetail.value) {
       taskDetail.value.isFollowed = !taskDetail.value.isFollowed;
     }
   };
 
-  const handleCommand = (command) => {
-    console.log(command);
-  };
-
   const refreshProgress = () => {
     console.log('刷新进度');
-  };
-
-  const updateAcceptance = () => {
-    console.log('更新验收标准');
   };
 
   const updateProgress = () => {
@@ -620,12 +695,26 @@
     return new Date(taskDetail.value.dueDate) < new Date();
   });
 
+  const updateTask = () => {
+    const updateData = {
+      ...taskDetail.value,
+    };
+    delete updateData.comment;
+    delete updateData.subtasks;
+    delete updateData.progressHistory;
+    emit('update-task', props.taskItem.id, updateData);
+    console.log(updateData);
+  };
+  const updateTaskStatus = () => {};
+
   onMounted(() => {
     const taskId = parseInt(route.params.id);
     const foundTask = getTaskData(taskId);
 
     if (foundTask) {
-      taskDetail.value = foundTask;
+      // taskDetail.value = foundTask;
+      taskDetail.value = JSON.parse(JSON.stringify(foundTask));
+      lastDescription = taskDetail.value.description;
       progressForm.value.progress = foundTask.progress;
     } else {
       ElMessage.error('任务不存在');
@@ -1012,6 +1101,7 @@
       .collaborators-info {
         display: flex;
         gap: 12px;
+        align-items: center;
         flex-wrap: wrap;
       }
     }
@@ -1138,5 +1228,10 @@
       flex-direction: column;
       gap: 8px;
     }
+  }
+  .user-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 </style>

@@ -95,7 +95,6 @@
                   v-model="taskForm.assignee"
                   placeholder="选择任务负责人"
                   style="width: 100%"
-                  filterable
                 >
                   <el-option
                     v-for="user in availableUsers"
@@ -118,7 +117,6 @@
                   multiple
                   placeholder="选择协作成员"
                   style="width: 100%"
-                  filterable
                 >
                   <el-option
                     v-for="user in availableCollaborators"
@@ -572,11 +570,6 @@
         ],
       };
 
-      // 模拟API调用
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      ElMessage.success('任务创建成功！');
-
       // 跳转到任务详情页
       // router.push(`/tasks/${newTask.id}`);
       emit('addTaskFinish', newTask);
@@ -645,6 +638,11 @@
     padding: 24px;
     max-width: 1400px;
     margin: 0 auto;
+  }
+  .user-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .task-form {
