@@ -14,6 +14,7 @@
         @add-subtask="addSubtask"
         @delete-subtask="deleteSubtask"
         @add-comment="addComment"
+        @updateTask="updateTask"
       />
     </el-dialog>
     <el-dialog v-model="addDialog" title="" width="95%" top="3vh">
@@ -415,6 +416,21 @@
     }
   };
 
+  const updateTask = async (id, taskForm) => {
+    const task = allTasks.value.find((t) => t.id === id);
+    if (task) {
+      const result = await taskApi.updateTask(id, taskForm);
+      console.log(result);
+      if (result.code === 200) {
+        ElMessage.success('任务更新成功');
+        loadTasks();
+        editDialog.value = false;
+      } else {
+        ElMessage.error('任务更新失败');
+      }
+    }
+  };
+
   const updateProgress = async (id, progressForm) => {
     const task = allTasks.value.find((t) => t.id === id);
     if (task) {
@@ -456,6 +472,7 @@
       ElMessage.success('子任务添加成功');
     }
   };
+
   const deleteSubtask = (subtaskId) => {
     const task = allTasks.value.find((t) => t.id === taskItem.value.id);
     if (task) {
@@ -464,11 +481,16 @@
     }
   };
 
-  const addComment = (id, commentForm) => {
+  const addComment = async (id, commentForm) => {
     const task = allTasks.value.find((t) => t.id === id);
     if (task) {
-      task.comments.push(commentForm);
-      ElMessage.success('评论添加成功');
+      const result = await taskApi.addTaskComment(id, commentForm);
+      if (result.code === 200) {
+        task.comments.push(commentForm);
+        ElMessage.success('评论添加成功');
+      } else {
+        ElMessage.error('评论添加失败');
+      }
     }
   };
 
@@ -521,15 +543,6 @@
           });
         break;
     }
-  };
-  const getPriorityType = (priority) => {
-    const types = {
-      低: 'success',
-      中: 'warning',
-      高: 'danger',
-      紧急: 'danger',
-    };
-    return types[priority] || 'info';
   };
   const taskItem = ref({});
   const editDialog = ref(false);

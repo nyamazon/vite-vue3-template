@@ -544,7 +544,7 @@
     }
 
     .metric-desc {
-      font-size: 12px;
+      font-size: 14px;
       color: var(--el-text-color-regular);
 
       &.success {
@@ -570,7 +570,7 @@
       }
 
       p {
-        font-size: 12px;
+        font-size: 14px;
         color: var(--el-text-color-regular);
       }
     }

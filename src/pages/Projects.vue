@@ -406,7 +406,7 @@
         :deep(.el-badge__content) {
           background: var(--el-color-primary);
           border: none;
-          font-size: 10px;
+          font-size: 12px;
           height: 16px;
           line-height: 16px;
           min-width: 16px;
@@ -573,7 +573,7 @@
 
         .tab-label {
           gap: 4px;
-          font-size: 12px;
+          font-size: 14px;
         }
       }
     }

@@ -245,13 +245,21 @@
               <template #header>
                 <div class="flex justify-between">
                   <h3>基本信息</h3>
-                  <el-button :icon="Edit" type="primary" size="small">编辑</el-button>
+                  <el-button
+                    :icon="Edit"
+                    type="primary"
+                    size="small"
+                    @click="baseInfoVisible = !baseInfoVisible"
+                  >
+                    {{ baseInfoVisible ? '保存' : '编辑' }}
+                  </el-button>
                 </div>
               </template>
               <div class="info-content">
                 <div class="info-item">
                   <label>任务状态</label>
                   <el-select
+                    v-if="baseInfoVisible"
                     v-model="taskDetail.status"
                     @change="updateTaskStatus"
                     style="width: 100%"
@@ -261,6 +269,13 @@
                     <el-option label="即将完成" value="即将完成" />
                     <el-option label="已完成" value="已完成" />
                   </el-select>
+                  <el-tag
+                    v-else
+                    :type="getStatusType(taskDetail.status)"
+                    :disable-transitions="true"
+                  >
+                    {{ taskDetail.status }}
+                  </el-tag>
                 </div>
 
                 <div class="info-item">
@@ -275,7 +290,7 @@
                 <div class="info-item">
                   <label>协作成员</label>
                   <div class="collaborators-info">
-                    <div class="flex gap-2" v-if="!addCollaboratorVisible">
+                    <div class="flex gap-2" v-if="!baseInfoVisible">
                       <MyAvatar
                         v-for="member in taskDetail.collaborators"
                         :key="member"
@@ -304,40 +319,88 @@
                         </el-option>
                       </el-select>
                     </div>
-                    <el-button :icon="Plus" size="small" @click="addCollaborator">
+                    <!-- <el-button :icon="Plus" size="small" @click="addCollaborator">
                       {{ addCollaboratorVisible ? '确定更改' : '添加成员' }}
-                    </el-button>
+                    </el-button> -->
                   </div>
                 </div>
 
                 <div class="info-item">
                   <label>开始时间</label>
-                  <div class="date-info">
+                  <div class="date-info" v-if="!baseInfoVisible">
                     <el-icon><Calendar /></el-icon>
                     <span>{{ taskDetail.startDate }}</span>
+                  </div>
+                  <div v-else>
+                    <el-date-picker
+                      v-model="taskDetail.startDate"
+                      type="date"
+                      placeholder="选择日期"
+                      style="width: 260px"
+                      format="YYYY/MM/DD"
+                      value-format="YYYY/MM/DD"
+                    />
                   </div>
                 </div>
 
                 <div class="info-item">
                   <label>截止时间</label>
-                  <div class="date-info" :class="{ overdue: isOverdue }">
+                  <div class="date-info" :class="{ overdue: isOverdue }" v-if="!baseInfoVisible">
                     <el-icon><Calendar /></el-icon>
                     <span>{{ taskDetail.dueDate }}</span>
                     <el-tag v-if="isOverdue" type="danger" size="small">已逾期</el-tag>
+                  </div>
+                  <div v-else>
+                    <el-date-picker
+                      v-model="taskDetail.dueDate"
+                      type="date"
+                      placeholder="选择日期"
+                      style="width: 260px"
+                      format="YYYY/MM/DD"
+                      value-format="YYYY/MM/DD"
+                    />
                   </div>
                 </div>
 
                 <div class="info-item">
                   <label>所属项目</label>
-                  <div class="date-info">
+                  <div class="date-info" v-if="!baseInfoVisible">
                     <span>{{ taskDetail.projectParentName }}</span>
+                  </div>
+                  <div v-else>
+                    <el-select
+                      v-model="taskDetail.projectParentName"
+                      placeholder="选择所属项目"
+                      style="width: 260px"
+                    >
+                      <el-option
+                        v-for="project in availableProjects"
+                        :key="project.id"
+                        :label="project.name"
+                        :value="project.value"
+                      />
+                    </el-select>
                   </div>
                 </div>
 
                 <div class="info-item">
                   <label>任务类型</label>
-                  <div class="date-info">
+                  <div class="date-info" v-if="!baseInfoVisible">
                     <span>{{ taskDetail.projectTypeName }}</span>
+                  </div>
+                  <div v-else>
+                    <el-select
+                      v-model="taskDetail.projectTypeName"
+                      placeholder="选择任务类型"
+                      style="width: 260px"
+                    >
+                      <el-option
+                        v-for="project in availableProjectsType"
+                        :key="project.id"
+                        :label="project.name"
+                        :value="project.value"
+                      />
+                    </el-select>
                   </div>
                 </div>
               </div>
@@ -433,17 +496,20 @@
           </el-form-item>
           <el-form-item label="负责人">
             <el-select v-model="subtaskForm.assignee" placeholder="选择负责人">
-              <el-option label="张三" value="张三" />
-              <el-option label="李四" value="李四" />
-              <el-option label="王五" value="王五" />
+              <el-option
+                v-for="user in availableUsers"
+                :key="user.value"
+                :label="user.label"
+                :value="user.value"
+              />
             </el-select>
           </el-form-item>
           <el-form-item label="截止时间">
             <el-date-picker
               v-model="subtaskForm.dueDate"
               type="date"
-              format="YYYY-MM-DD"
-              value-format="YYYY-MM-DD"
+              value-format="YYYY/MM/DD"
+              format="YYYY/MM/DD"
               placeholder="选择截止时间"
               style="width: 100%"
             />
@@ -465,7 +531,7 @@
 </template>
 
 <script setup>
-  import { ref, computed, onMounted } from 'vue';
+  import { ref, computed, onMounted, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import { ElMessage } from 'element-plus';
   import MyAvatar from '@/components/MyAvatar.vue';
@@ -520,8 +586,8 @@
     editDescriptionVisible.value = false;
   };
 
-  // 添加协作成员数据编辑
-  const addCollaboratorVisible = ref(false);
+  const baseInfoVisible = ref(false);
+
   //成员opations
   const availableUsers = ref([
     { value: '张星', label: '张星', role: '后端开发工程师' },
@@ -533,12 +599,27 @@
     { value: '张经凡', label: '张经凡', role: '编程技术员' },
     { value: '郭俊', label: '郭俊', role: '编程技术员' },
   ]);
+  const availableProjects = ref([
+    { id: 1, name: '训练平台-股指', value: '训练平台-股指' },
+    { id: 2, name: '训练平台-股票', value: '训练平台-股票' },
+    { id: 3, name: '五大系统', value: '五大系统' },
+    { id: 4, name: '四大平台', value: '四大平台' },
+    { id: 5, name: '模拟交易平台', value: '模拟交易平台' },
+    { id: 6, name: '日常任务', value: '日常任务' },
+    { id: 7, name: '六分区平台', value: '六分区平台' },
+    { id: 8, name: '回测框架', value: '回测框架' },
+    { id: 9, name: '大类资产平台', value: '大类资产平台' },
+    { id: 10, name: '商品期货平台', value: '商品期货平台' },
+    { id: 11, name: '沙盘推演平台', value: '沙盘推演平台' },
+    { id: 12, name: '游资监控平台', value: '游资监控平台' },
+  ]);
+  const availableProjectsType = ref([
+    { id: 1, name: '总经办下发', value: '总经办下发' },
+    { id: 2, name: '部门自发', value: '部门自发' },
+  ]);
   const availableCollaborators = computed(() => {
     return availableUsers.value.filter((user) => user.value !== taskDetail.value.assignee);
   });
-  const addCollaborator = () => {
-    addCollaboratorVisible.value = !addCollaboratorVisible.value;
-  };
 
   // 对话框状态
   const showProgressDialog = ref(false);
@@ -620,35 +701,13 @@
   };
 
   const getStatusType = (status) => {
-    switch (status) {
-      case '未开始':
-        return 'info';
-      case '进行中':
-        return 'warning';
-      case '待审核':
-        return 'primary';
-      case '已完成':
-        return 'success';
-      case '已取消':
-        return 'danger';
-      default:
-        return '';
-    }
-  };
-
-  const getPriorityType = (priority) => {
-    switch (priority) {
-      case '低':
-        return 'success';
-      case '中':
-        return 'warning';
-      case '高':
-        return 'danger';
-      case '紧急':
-        return 'danger';
-      default:
-        return '';
-    }
+    const types = {
+      未开始: 'info',
+      进行中: 'success',
+      即将完成: 'danger',
+      已完成: 'warning',
+    };
+    return types[status] || 'info';
   };
 
   const getDifficultyType = (difficulty) => {
@@ -696,6 +755,11 @@
   });
 
   const updateTask = () => {
+    console.log(baseInfoVisible.value, editDescriptionVisible.value);
+    if (baseInfoVisible.value || editDescriptionVisible.value) {
+      ElMessage.error('请先保存所有的修改');
+      return;
+    }
     const updateData = {
       ...taskDetail.value,
     };
@@ -706,6 +770,15 @@
     console.log(updateData);
   };
   const updateTaskStatus = () => {};
+
+  watch(
+    () => props.taskItem,
+    () => {
+      taskDetail.value = JSON.parse(JSON.stringify(props.taskItem));
+      progressForm.value.progress = props.taskItem.progress;
+    },
+    { deep: true }
+  );
 
   onMounted(() => {
     const taskId = parseInt(route.params.id);
@@ -929,7 +1002,7 @@
         }
 
         .timeline-progress {
-          font-size: 12px;
+          font-size: 14px;
           color: var(--el-color-success);
           font-weight: 500;
         }
@@ -983,14 +1056,14 @@
             gap: 8px;
 
             .due-date {
-              font-size: 12px;
+              font-size: 14px;
               color: var(--el-text-color-regular);
             }
           }
         }
 
         .subtask-description {
-          font-size: 12px;
+          font-size: 14px;
           color: var(--el-text-color-regular);
           line-height: 1.4;
         }
@@ -1053,7 +1126,7 @@
             }
 
             .comment-time {
-              font-size: 12px;
+              font-size: 14px;
               color: var(--el-text-color-placeholder);
             }
           }
@@ -1080,7 +1153,7 @@
 
       label {
         display: block;
-        font-size: 12px;
+        font-size: 14px;
         color: var(--el-text-color-regular);
         margin-bottom: 8px;
         font-weight: 500;
@@ -1113,7 +1186,7 @@
 
       label {
         display: block;
-        font-size: 12px;
+        font-size: 14px;
         color: var(--el-text-color-regular);
         margin-bottom: 8px;
         font-weight: 500;
@@ -1169,7 +1242,7 @@
         .file-meta {
           display: flex;
           gap: 8px;
-          font-size: 12px;
+          font-size: 14px;
           color: var(--el-text-color-placeholder);
         }
       }

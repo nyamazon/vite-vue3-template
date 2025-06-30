@@ -185,6 +185,8 @@
                           placeholder="截止时间"
                           size="small"
                           style="width: 100%"
+                          value-format="YYYY/MM/DD"
+                          format="YYYY/MM/DD"
                         />
                       </el-col>
                       <el-col :span="1">
@@ -224,6 +226,8 @@
                   placeholder="选择开始时间"
                   style="width: 100%"
                   :disabled-date="disabledStartDate"
+                  value-format="YYYY/MM/DD"
+                  format="YYYY/MM/DD"
                 />
               </el-form-item>
               <el-form-item label="截止时间" prop="dueDate" required label-width="auto">
@@ -233,6 +237,8 @@
                   placeholder="选择截止时间"
                   style="width: 100%"
                   :disabled-date="disabledEndDate"
+                  value-format="YYYY/MM/DD"
+                  format="YYYY/MM/DD"
                 />
               </el-form-item>
             </el-card>
@@ -312,8 +318,8 @@
                 <div class="preview-item">
                   <label>时间范围:</label>
                   <span>
-                    {{ taskForm.startDate ? formatDate(taskForm.startDate) : '未设置' }} ~
-                    {{ taskForm.dueDate ? formatDate(taskForm.dueDate) : '未设置' }}
+                    {{ taskForm.startDate ? taskForm.startDate : '未设置' }} ~
+                    {{ taskForm.dueDate ? taskForm.dueDate : '未设置' }}
                   </span>
                 </div>
                 <div class="preview-item">
@@ -518,11 +524,6 @@
     return projectType ? projectType.name : '';
   };
 
-  const formatDate = (date) => {
-    if (!date) return '';
-    return new Date(date).toLocaleDateString('zh-CN');
-  };
-
   const submitTask = async () => {
     if (!taskFormRef.value) return;
 
@@ -542,8 +543,8 @@
         difficulty: taskForm.value.difficulty,
         assignee: taskForm.value.assignee,
         collaborators: taskForm.value.collaborators,
-        startDate: formatDate(taskForm.value.startDate),
-        dueDate: formatDate(taskForm.value.dueDate),
+        startDate: taskForm.value.startDate,
+        dueDate: taskForm.value.dueDate,
         progress: taskForm.value.progress,
         projectParentName: getprojectParentName(taskForm.value.projectParentId),
         projectParentId: taskForm.value.projectParentId,
@@ -553,7 +554,7 @@
         blockedTasks: taskForm.value.blockedTasks,
         subtasks: taskForm.value.subtasks.map((subtask) => ({
           ...subtask,
-          dueDate: subtask.dueDate ? formatDate(subtask.dueDate) : null,
+          dueDate: subtask.dueDate,
         })),
         comments: [], // 默认先置空
         attachments: [], // 默认先置空

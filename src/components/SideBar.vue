@@ -230,7 +230,7 @@
         }
 
         p {
-          font-size: 12px;
+          font-size: 14px;
           color: var(--el-text-color-regular);
           margin: 0;
         }
@@ -316,7 +316,7 @@
         }
 
         .menu-desc {
-          font-size: 12px;
+          font-size: 14px;
           color: var(--el-text-color-placeholder);
           line-height: 1.2;
           margin-top: 2px;
@@ -379,7 +379,7 @@
           }
 
           .user-role {
-            font-size: 12px;
+            font-size: 14px;
             color: var(--el-text-color-regular);
             margin: 0;
           }

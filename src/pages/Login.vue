@@ -461,7 +461,7 @@
 
       .divider-text {
         color: var(--el-text-color-placeholder);
-        font-size: 12px;
+        font-size: 14px;
       }
 
       .quick-login-buttons {
@@ -508,7 +508,7 @@
 
       .footer-text {
         color: var(--el-text-color-placeholder);
-        font-size: 12px;
+        font-size: 14px;
         margin-bottom: 12px;
       }
 
