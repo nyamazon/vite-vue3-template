@@ -73,6 +73,11 @@ export const taskApi = {
   async getTaskStats() {
     return await api.get('/tasks/stats');
   },
+
+  // 获取任务依赖关系
+  async getTaskDependencies() {
+    return await api.get('/tasks/dependencies');
+  },
 };
 
 // 导出单个方法以便直接使用
@@ -91,6 +96,7 @@ export const {
   searchTasks,
   filterTasks,
   getTaskStats,
+  getTaskDependencies,
 } = taskApi;
 
 export default taskApi;

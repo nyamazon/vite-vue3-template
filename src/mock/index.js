@@ -1,4 +1,5 @@
 import Mock from 'mockjs';
+import dayjs from 'dayjs';
 
 // 模拟任务数据存储
 let taskStorage = JSON.parse(localStorage.getItem('tasks')) || [];
@@ -25,6 +26,9 @@ if (taskStorage.length === 0) {
       projectTypeId: '总经办下发',
       isFollowed: false,
       blockedTasks: [],
+      dependencies: [], // 没有前置依赖
+      createTime: '2024-01-15 10:00:00',
+      updateTime: '2024-01-15 12:00:00',
       subtasks: [
         {
           id: 1,
@@ -90,13 +94,16 @@ if (taskStorage.length === 0) {
       projectTypeId: '部门自发',
       isFollowed: true,
       blockedTasks: [],
+      dependencies: [1], // 依赖任务1
       subtasks: [],
       comments: [],
       attachments: [],
+      createTime: '2024-01-22 10:00:00',
+      updateTime: '2024-01-22 12:00:00',
       progressHistory: [
         {
           id: 1,
-          timestamp: '2024-01-21 16:30',
+          timestamp: '2024-01-22 16:30:00',
           user: '何也',
           action: '创建任务',
           description: '任务创建完成',
@@ -123,6 +130,7 @@ if (taskStorage.length === 0) {
       projectTypeId: '总经办下发',
       isFollowed: false,
       blockedTasks: [],
+      dependencies: [1, 2], // 依赖任务1和2
       subtasks: [
         {
           id: 3,
@@ -158,10 +166,12 @@ if (taskStorage.length === 0) {
         },
       ],
       attachments: [],
+      createTime: '2024-01-08 10:00:00',
+      updateTime: '2024-01-22 12:00:00',
       progressHistory: [
         {
           id: 2,
-          timestamp: '2024-01-20 15:45',
+          timestamp: '2024-01-20 15:45:00',
           user: '黄骏雄',
           action: '更新进度',
           description: '完成核心交易功能开发，开始测试阶段',
@@ -210,8 +220,8 @@ Mock.setup({
 Mock.mock(/\/api\/tasks$/, 'get', (options) => {
   console.log('Mock: 获取所有任务');
   const tasks = [...taskStorage];
-  // 按创建时间排序
-  tasks.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+  // 按更新时间排序
+  tasks.sort((a, b) => new Date(b.updateTime) - new Date(a.updateTime));
   return createResponse(true, tasks, '获取任务列表成功');
 });
 
@@ -240,6 +250,8 @@ Mock.mock(/\/api\/tasks$/, 'post', (options) => {
     blockedTasks: taskData.blockedTasks || [],
     comments: taskData.comments || [],
     attachments: taskData.attachments || [],
+    createTime: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+    updateTime: dayjs().format('YYYY-MM-DD HH:mm:ss'),
     progressHistory: taskData.progressHistory || [
       {
         id: 1,
@@ -275,6 +287,7 @@ Mock.mock(/\/api\/tasks\/(\d+)$/, 'put', (options) => {
     ...oldTask,
     ...updateData,
     id: Number.parseInt(id), // 确保ID不被覆盖
+    updateTime: dayjs().format('YYYY-MM-DD HH:mm:ss'),
   };
 
   // 如果进度有变化，添加进度历史记录
@@ -360,6 +373,7 @@ Mock.mock(/\/api\/tasks\/(\d+)\/status$/, 'post', (options) => {
 
   const oldTask = { ...taskStorage[taskIndex] };
   taskStorage[taskIndex].status = status;
+  taskStorage[taskIndex].updateTime = dayjs().format('YYYY-MM-DD HH:mm:ss');
 
   // 添加状态更新历史记录
   const statusHistory = {
@@ -393,6 +407,7 @@ Mock.mock(/\/api\/tasks\/(\d+)\/progress$/, 'post', (options) => {
 
   const oldProgress = taskStorage[taskIndex].progress;
   taskStorage[taskIndex].progress = progress;
+  taskStorage[taskIndex].updateTime = dayjs().format('YYYY-MM-DD HH:mm:ss');
 
   // 添加进度更新历史记录
   const progressHistory = {
@@ -628,6 +643,25 @@ Mock.mock(/\/api\/tasks\/stats$/, 'get', (options) => {
       : 0;
 
   return createResponse(true, stats, '统计信息获取成功');
+});
+
+// 获取任务依赖关系
+Mock.mock(/\/api\/tasks\/dependencies$/, 'get', (options) => {
+  console.log('Mock: 获取任务依赖关系');
+
+  const dependencies = taskStorage.map((task) => ({
+    id: task.id,
+    name: task.name,
+    dependencies: task.dependencies || [],
+    status: task.status,
+    assignee: task.assignee,
+    projectParentName: task.projectParentName,
+    progress: task.progress,
+    startDate: task.startDate,
+    dueDate: task.dueDate,
+  }));
+
+  return createResponse(true, dependencies, '获取任务依赖关系成功');
 });
 
 console.log('Mock.js 已初始化，任务管理API已配置完成');

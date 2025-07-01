@@ -1,10 +1,10 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router';
 import Login from '@/pages/Login.vue';
 import Dashboard from '@/pages/Dashboard.vue';
 import Projects from '@/pages/Projects.vue';
 import TasksKanban from '@/pages/tasks/TasksKanban.vue';
-import TasksTable from '@/pages/tasks/TasksTable.vue';
 import TaskDetail from '@/pages/tasks/TaskDetail.vue';
+import TaskFlow from '@/pages/tasks/TaskFlow.vue';
 const routes = [
   {
     path: '/',
@@ -40,9 +40,9 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
-        path: 'table',
-        name: 'TasksTable',
-        component: TasksTable,
+        path: 'flow',
+        name: 'TaskFlow',
+        component: TaskFlow,
         meta: { requiresAuth: true },
       },
     ],
@@ -56,7 +56,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes,
 });
 

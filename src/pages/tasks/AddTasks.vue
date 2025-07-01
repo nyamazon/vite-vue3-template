@@ -373,7 +373,7 @@
   const taskRules = {
     name: [
       { required: true, message: '请输入任务名称', trigger: 'blur' },
-      { min: 2, max: 100, message: '任务名称长度在 2 到 100 个字符', trigger: 'blur' },
+      { min: 0, max: 100, message: '任务名称长度在 0 到 100 个字符', trigger: 'blur' },
     ],
     description: [
       { required: true, message: '请输入任务描述', trigger: 'blur' },
@@ -584,7 +584,7 @@
 
   onMounted(() => {
     // 设置默认开始时间为今天
-    taskForm.value.startDate = new Date();
+    // taskForm.value.startDate = new Date();
   });
 </script>
 

@@ -128,7 +128,7 @@
             <el-card class="subtasks-card" shadow="never">
               <template #header>
                 <div class="card-header">
-                  <h3>子任务 ({{ taskDetail.subtasks.length }})</h3>
+                  <h3>子任务 ({{ taskDetail?.subtasks?.length }})</h3>
                   <el-button
                     type="primary"
                     :icon="Plus"
@@ -168,7 +168,7 @@
                 </div>
 
                 <el-empty
-                  v-if="taskDetail.subtasks.length === 0"
+                  v-if="taskDetail?.subtasks?.length === 0"
                   description="暂无子任务"
                   :image-size="80"
                 />
@@ -776,6 +776,7 @@
     () => {
       taskDetail.value = JSON.parse(JSON.stringify(props.taskItem));
       progressForm.value.progress = props.taskItem.progress;
+      console.log('更新了任务内容', taskDetail.value, taskDetail.value.comments);
     },
     { deep: true }
   );

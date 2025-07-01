@@ -85,7 +85,7 @@
 
               <p class="project-description">{{ project.description }}</p>
               <div class="project-btn">
-                <el-button size="mini" @click="jumpToProject(project)">访问项目</el-button>
+                <el-button @click="jumpToProject(project)">访问项目</el-button>
               </div>
             </div>
           </el-card>
@@ -133,10 +133,10 @@
 
   const projectCategoryOptions = ref([
     { label: '全部项目', value: 'all' },
-    { label: '技术策划部', value: '技术策划部' },
-    { label: '五大系统', value: '五大系统' },
-    { label: '四大平台', value: '四大平台' },
-    { label: '特色体系', value: '特色体系' },
+    // { label: '技术策划部', value: '技术策划部' },
+    // { label: '五大系统', value: '五大系统' },
+    // { label: '四大平台', value: '四大平台' },
+    // { label: '特色体系', value: '特色体系' },
   ]);
 
   const projects = ref([
@@ -195,60 +195,60 @@
       description: '奇妙小工具',
       url: 'http://dz.szdjct.com:5208/sixquarterstrategy',
     },
-    {
-      id: 1,
-      name: '动态右侧系统',
-      category: '五大系统',
-      startDate: '2024-01-15',
-      endDate: '2024-02-15',
-      description: '动态右侧系统的描述',
-      url: 'https://dz.szdjct.com/dynamic-right-side-sys/#/',
-    },
-    {
-      id: 2,
-      name: '历史数据系统',
-      category: '五大系统',
-      startDate: '2024-01-10',
-      endDate: '2024-01-25',
-      description: '历史数据系统的描述',
-      url: 'https://dz.szdjct.com/dzkj-static2/#/',
-    },
-    {
-      id: 3,
-      name: '趋势等级应用平台',
-      category: '四大平台',
-      startDate: '2024-01-05',
-      endDate: '2024-01-20',
-      description: '趋势等级应用平台的描述',
-      url: 'https://dz.szdjct.com/trendlevel-click/#/',
-    },
-    {
-      id: 4,
-      name: '股指应用平台',
-      category: '四大平台',
-      startDate: '2023-12-20',
-      endDate: '2024-01-10',
-      description: '股指应用平台的描述',
-      url: 'https://dz.szdjct.com/strategy-click/#/',
-    },
-    {
-      id: 5,
-      name: '智能对冲系统',
-      category: '特色体系',
-      startDate: '2024-01-12',
-      endDate: '2024-02-20',
-      description: '智能对冲系统的描述',
-      url: 'https://dz.szdjct.com/hedging-click/#/',
-    },
-    {
-      id: 6,
-      name: 'IM分段应用平台系统',
-      category: '特色体系',
-      startDate: '2024-01-08',
-      endDate: '2024-02-08',
-      description: 'IM分段应用平台系统的描述',
-      url: 'https://dz.szdjct.com/im-time-slice/#/',
-    },
+    // {
+    //   id: 1,
+    //   name: '动态右侧系统',
+    //   category: '五大系统',
+    //   startDate: '2024-01-15',
+    //   endDate: '2024-02-15',
+    //   description: '动态右侧系统的描述',
+    //   url: 'https://dz.szdjct.com/dynamic-right-side-sys/#/',
+    // },
+    // {
+    //   id: 2,
+    //   name: '历史数据系统',
+    //   category: '五大系统',
+    //   startDate: '2024-01-10',
+    //   endDate: '2024-01-25',
+    //   description: '历史数据系统的描述',
+    //   url: 'https://dz.szdjct.com/dzkj-static2/#/',
+    // },
+    // {
+    //   id: 3,
+    //   name: '趋势等级应用平台',
+    //   category: '四大平台',
+    //   startDate: '2024-01-05',
+    //   endDate: '2024-01-20',
+    //   description: '趋势等级应用平台的描述',
+    //   url: 'https://dz.szdjct.com/trendlevel-click/#/',
+    // },
+    // {
+    //   id: 4,
+    //   name: '股指应用平台',
+    //   category: '四大平台',
+    //   startDate: '2023-12-20',
+    //   endDate: '2024-01-10',
+    //   description: '股指应用平台的描述',
+    //   url: 'https://dz.szdjct.com/strategy-click/#/',
+    // },
+    // {
+    //   id: 5,
+    //   name: '智能对冲系统',
+    //   category: '特色体系',
+    //   startDate: '2024-01-12',
+    //   endDate: '2024-02-20',
+    //   description: '智能对冲系统的描述',
+    //   url: 'https://dz.szdjct.com/hedging-click/#/',
+    // },
+    // {
+    //   id: 6,
+    //   name: 'IM分段应用平台系统',
+    //   category: '特色体系',
+    //   startDate: '2024-01-08',
+    //   endDate: '2024-02-08',
+    //   description: 'IM分段应用平台系统的描述',
+    //   url: 'https://dz.szdjct.com/im-time-slice/#/',
+    // },
   ]);
 
   const filteredProjects = computed(() => {

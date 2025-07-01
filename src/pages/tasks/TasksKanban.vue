@@ -25,6 +25,10 @@
       <!-- 搜索和筛选 -->
       <div class="filters">
         <div class="filter-controls">
+          <el-radio-group v-model="dataViewType">
+            <el-radio-button value="看板">看板</el-radio-button>
+            <el-radio-button value="表格">表格</el-radio-button>
+          </el-radio-group>
           <el-input
             v-model="searchTerm"
             placeholder="搜索任务名称或内容..."
@@ -32,18 +36,34 @@
             class="search-input"
             clearable
           />
-          <el-select v-model="activeTab" placeholder="任务类型" style="width: 160px">
+          <el-date-picker
+            v-model="dateRange"
+            type="daterange"
+            range-separator=" - "
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            value-format="YYYY-MM-DD"
+            style="width: 200px"
+          />
+          <el-select
+            v-model="activeTab"
+            placeholder="视图状态"
+            style="width: 160px"
+            v-if="dataViewType === '看板'"
+          >
             <el-option label="按任务状态" value="all" />
             <el-option label="按人员" value="person" />
           </el-select>
+          <el-checkbox v-model="onlyMyTasks" label="只看我" />
         </div>
         <div class="add-btn">
-          <el-button :icon="Plus" @click="addDialog = true">添加任务</el-button>
+          <el-button type="primary" @click="clearData">清空数据重新来</el-button>
+          <el-button :icon="Plus" type="primary" @click="addDialog = true">添加任务</el-button>
         </div>
       </div>
 
       <!-- 看板视图 -->
-      <div class="kanban-board">
+      <div class="kanban-board" v-if="dataViewType === '看板'">
         <div
           v-for="column in kanbanColumns"
           :key="column.status"
@@ -136,6 +156,53 @@
           </el-card>
         </div>
       </div>
+      <div v-if="dataViewType === '表格'">
+        <el-table :data="allTasks" style="width: 100%" border>
+          <el-table-column prop="name" label="任务名称" />
+          <el-table-column prop="status" label="任务状态">
+            <template #default="{ row }">
+              <el-tag :type="getStatusType(row.status)">{{ row.status }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="assignee" label="负责人" />
+          <el-table-column prop="collaborators" label="协作成员" width="200">
+            <template #default="{ row }">
+              <div class="flex gap-2 flex-wrap">
+                <el-tag v-for="collaborator in row.collaborators" :key="collaborator">
+                  {{ collaborator }}
+                </el-tag>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="progress" label="进度">
+            <template #default="{ row }">
+              <el-progress :percentage="row.progress" />
+            </template>
+          </el-table-column>
+          <el-table-column prop="startDate" label="开始时间" />
+          <el-table-column prop="dueDate" label="结束时间" />
+          <el-table-column prop="difficulty" label="难度">
+            <template #default="{ row }">
+              <el-tag :type="getDifficultyType(row.difficulty)">{{ row.difficulty }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="projectParentName" label="所属项目" />
+          <el-table-column prop="projectTypeName" label="任务类型" />
+          <el-table-column prop="isFollowed" label="是否关注">
+            <template #default="{ row }">
+              <el-tag :type="row.isFollowed ? 'success' : 'info'">
+                {{ row.isFollowed ? '是' : '否' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <!-- <el-table-column prop="blockedTasks" label="阻塞任务" /> -->
+          <!-- <el-table-column prop="subtasks" label="子任务" /> -->
+          <!-- <el-table-column prop="comments" label="评论" /> -->
+          <!-- <el-table-column prop="attachments" label="附件" /> -->
+          <el-table-column prop="createTime" label="创建时间" />
+          <el-table-column prop="updateTime" label="更新时间" />
+        </el-table>
+      </div>
     </div>
   </div>
 </template>
@@ -168,6 +235,9 @@
   const filterType = ref('all');
   const filterStatus = ref('all');
   const filterResponsible = ref('all');
+  const onlyMyTasks = ref(false);
+  const dataViewType = ref('看板');
+  const dateRange = ref([]);
 
   const currentUser = JSON.parse(localStorage.getItem('userInfo'))?.nickName;
 
@@ -353,8 +423,8 @@
     }
   };
 
-  onMounted(() => {
-    loadTasks();
+  const tasksByUpdateTime = computed(() => {
+    return allTasks.value.sort((a, b) => new Date(b.updateTime) - new Date(a.updateTime));
   });
 
   const getFilteredTasks = (viewType) => {
@@ -381,14 +451,19 @@
 
   const getTasksByStatus = (status) => {
     const filteredTasks = getFilteredTasks(activeTab.value);
-
+    let result = [];
     if (activeTab.value === 'person') {
       // 按人员分类时，status实际是人员姓名
-      return filteredTasks.filter((task) => task.assignee === status);
+      result = filteredTasks.filter((task) => task.assignee === status);
     } else {
       // 按状态分类
-      return filteredTasks.filter((task) => task.status === status);
+      result = filteredTasks.filter((task) => task.status === status);
     }
+    //如果勾选了只看我，那就只筛选出任务里的assignee等于当前用户
+    if (onlyMyTasks.value) {
+      result = result.filter((task) => task.assignee === currentUser);
+    }
+    return result;
   };
 
   const getDifficultyType = (difficulty) => {
@@ -491,10 +566,11 @@
       } else {
         ElMessage.error('评论添加失败');
       }
+      loadTasks();
     }
   };
 
-  const handleDrop = (e, newStatus) => {
+  const handleDrop = async (e, newStatus) => {
     e.preventDefault();
 
     // 人员分类视图不支持拖拽改变状态
@@ -509,10 +585,11 @@
       const task = allTasks.value.find((t) => t.id === taskId);
       if (task) {
         task.status = newStatus;
-        taskApi.updateTaskStatus(taskId, newStatus, currentUser);
+        await taskApi.updateTaskStatus(taskId, newStatus, currentUser);
         ElMessage.success(`任务已移动到"${newStatus}"`);
       }
     }
+    loadTasks();
   };
 
   const handleTaskCommand = async (command) => {
@@ -571,8 +648,20 @@
       ElMessage.error('任务创建失败');
     }
     // allTasks.value.push(task);
-    taskApi;
+    // taskApi;
   };
+
+  const clearData = () => {
+    localStorage.clear();
+    ElMessage.success('数据已清空,即将自动刷新页面...');
+    setTimeout(() => {
+      location.reload();
+    }, 3000);
+  };
+
+  onMounted(() => {
+    loadTasks();
+  });
 </script>
 
 <style lang="scss" scoped>
@@ -631,8 +720,7 @@
     justify-content: space-between;
 
     .search-input {
-      flex: 1;
-      max-width: 300px;
+      width: 200px;
     }
 
     .filter-controls {

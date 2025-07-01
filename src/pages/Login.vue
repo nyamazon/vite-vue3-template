@@ -88,7 +88,9 @@
             <el-form-item>
               <div class="form-options">
                 <el-checkbox v-model="loginForm.remember">记住我</el-checkbox>
-                <el-link type="primary" :underline="false">忘记密码？</el-link>
+                <el-link type="primary" :underline="'never'" @click="handleForgetPassword">
+                  忘记密码？
+                </el-link>
               </div>
             </el-form-item>
 
@@ -121,11 +123,11 @@
       <div class="footer-content">
         <div class="copyright">© 2025 技术策划部项目管理系统. All rights reserved.</div>
         <div class="footer-links">
-          <el-link type="info" :underline="false">使用帮助</el-link>
+          <el-link type="info" :underline="'never'">使用帮助</el-link>
           <el-divider direction="vertical" />
-          <el-link type="info" :underline="false">系统状态</el-link>
+          <el-link type="info" :underline="'never'">系统状态</el-link>
           <el-divider direction="vertical" />
-          <el-link type="info" :underline="false">联系支持</el-link>
+          <el-link type="info" :underline="'never'">联系支持</el-link>
         </div>
       </div>
     </div>
@@ -135,7 +137,7 @@
 <script setup>
   import { ref, reactive } from 'vue';
   import { useRouter } from 'vue-router';
-  import { ElMessage } from 'element-plus';
+  import { ElMessage, ElMessageBox } from 'element-plus';
   import { User, Lock, Setting, TrendCharts, FolderOpened, List } from '@element-plus/icons-vue';
   import { loginReq } from '@/api/index';
 
@@ -149,6 +151,15 @@
     password: '',
     token: '',
   });
+
+  const handleForgetPassword = () => {
+    ElMessageBox.alert('请联系系统管理员重置密码', '提示', {
+      confirmButtonText: '好的',
+      callback: (action) => {
+        console.log(action);
+      },
+    });
+  };
 
   // 表单验证规则
   const loginRules = {
@@ -165,7 +176,6 @@
   // 登录处理
   const handleLogin = async () => {
     if (!loginFormRef.value) return;
-
     try {
       await loginFormRef.value.validate();
       loading.value = true;
@@ -209,7 +219,7 @@
 <style lang="scss" scoped>
   .login-page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #667eea 0%, #395c9b 100%);
     display: flex;
     flex-direction: column;
     position: relative;

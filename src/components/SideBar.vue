@@ -132,16 +132,17 @@
           name: '任务看板',
           href: '/tasks/kanban',
           icon: View,
-          description: '以看板形式查看所有任务',
+          description: '以看板/表格的形式查看所有任务',
         },
         {
-          name: '任务表格',
-          href: '/tasks/table',
-          icon: Plus,
-          description: '以表格形式查看所有任务',
+          name: '任务流程',
+          href: '/tasks/flow',
+          icon: Bell,
+          description: '以流程图的形式查看任务依赖关系',
         },
       ],
     },
+
     {
       name: '系统设置',
       icon: Setting,
