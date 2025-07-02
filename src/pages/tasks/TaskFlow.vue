@@ -8,7 +8,6 @@
           <el-button :icon="ZoomOut" @click="zoomOut">缩小</el-button>
           <el-button :icon="Refresh" @click="resetView">重置</el-button>
         </el-button-group>
-        <el-button type="primary" :icon="Download" @click="exportImage">导出</el-button>
         <el-button
           type="success"
           :icon="Check"
@@ -171,14 +170,14 @@
     >
       <div v-if="currentTask" class="task-detail">
         <el-descriptions :column="2" border>
-          <el-descriptions-item label="任务名称" :span="2">
+          <el-descriptions-item label="任务名称" :span="2" width="100px">
             {{ currentTask.name }}
           </el-descriptions-item>
           <el-descriptions-item label="负责人">
             {{ currentTask.assignee || '未分配' }}
           </el-descriptions-item>
           <el-descriptions-item label="状态">
-            <el-tag :type="getStatusType(currentTask.status)">
+            <el-tag :type="getStatusType(currentTask.status)" disable-transitions>
               {{ currentTask.status }}
             </el-tag>
           </el-descriptions-item>
@@ -203,6 +202,7 @@
                 v-for="depId in currentTask.dependencies"
                 :key="depId"
                 size="small"
+                disable-transitions
                 style="margin-right: 8px; margin-bottom: 4px"
               >
                 {{ getTaskNameById(depId) }}
@@ -234,6 +234,7 @@
   import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from 'vue';
   import { Graph } from '@antv/x6';
   import { register } from '@antv/x6-vue-shape';
+  import { Export } from '@antv/x6-plugin-export';
   import { ElMessage } from 'element-plus';
   import {
     ZoomIn,
@@ -269,6 +270,7 @@
               style: { visibility: 'visible' },
             },
           },
+          zIndex: 10,
         },
         right: {
           position: 'right',
@@ -282,6 +284,7 @@
               style: { visibility: 'visible' },
             },
           },
+          zIndex: 10,
         },
         bottom: {
           position: 'bottom',
@@ -295,6 +298,7 @@
               style: { visibility: 'visible' },
             },
           },
+          zIndex: 10,
         },
         left: {
           position: 'left',
@@ -308,6 +312,7 @@
               style: { visibility: 'visible' },
             },
           },
+          zIndex: 10,
         },
       },
     },
@@ -472,6 +477,7 @@
     });
     // 绑定事件
     bindEvents();
+    graph.use(new Export());
     return true;
   };
 
@@ -908,15 +914,6 @@
   const zoomOut = () => graph?.zoom(-0.1);
   const resetView = () => {
     graph?.zoomToFit({ padding: 50, maxScale: 1 });
-  };
-
-  const exportImage = () => {
-    graph?.toPNG((dataUri) => {
-      const link = document.createElement('a');
-      link.download = `task-flow-${Date.now()}.png`;
-      link.href = dataUri;
-      link.click();
-    });
   };
 
   // 生命周期

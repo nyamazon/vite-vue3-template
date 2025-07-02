@@ -11,6 +11,7 @@
   "dependencies": {
     "@antv/layout": "^1.2.14-beta.8",
     "@antv/x6": "^2.18.1",
+    "@antv/x6-plugin-export": "^2.1.6",
     "@antv/x6-vue-shape": "^2.1.2",
     "@tailwindcss/vite": "^4.1.8",
     "axios": "^1.9.0",
