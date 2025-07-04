@@ -178,6 +178,15 @@
       url: 'http://dz.szdjct.com:5208/tools',
     },
     {
+      id: 215,
+      name: '大类资产案例',
+      category: '技术策划部',
+      startDate: '2024-01-16',
+      endDate: '2024-02-16',
+      description: '大类资产案例',
+      url: 'http://dz.szdjct.com:5208/dlzc',
+    },
+    {
       id: 11,
       name: '🚀 六分区策略优化',
       category: '技术策划部',
@@ -194,6 +203,15 @@
       endDate: '2024-02-16',
       description: '奇妙小工具',
       url: 'http://dz.szdjct.com:5208/sixquarterstrategy',
+    },
+    {
+      id: 13,
+      name: '🚀 模拟交易平台-掘金模拟策略信号',
+      category: '技术策划部',
+      startDate: '2024-01-16',
+      endDate: '2024-02-16',
+      description: '掘金模拟策略信号',
+      url: 'http://dz.szdjct.com:5208/mnjystrategy/',
     },
     // {
     //   id: 1,

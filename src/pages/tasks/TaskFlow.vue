@@ -181,6 +181,9 @@
               {{ currentTask.status }}
             </el-tag>
           </el-descriptions-item>
+          <el-descriptions-item label="协作成员" :span="2" width="100px">
+            {{ currentTask.collaborators.join(',') || '未分配' }}
+          </el-descriptions-item>
           <el-descriptions-item label="进度">
             <el-progress :percentage="currentTask.progress || 0" />
           </el-descriptions-item>
@@ -396,7 +399,7 @@
       background: {
         color: '#f8f9fa',
       },
-
+      panning: true,
       mousewheel: {
         enabled: true,
         modifiers: ['ctrl', 'meta'],
